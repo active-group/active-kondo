@@ -1,6 +1,7 @@
 {:linters {:unused-referred-var {:exclude {taoensso.timbre [debug info warn error]}}
            :unresolved-symbol {:exclude [(cljs.core.async.macros/go [<! >!])
-                                         (cljs.core.async.macros/go-loop [<! >!])]}}
+                                         (cljs.core.async.macros/go-loop [<! >!])
+                                         (riemann.streams/where [else event metric service state])]}}
  :hooks {:analyze-call {active.clojure.cljs.record/define-record-type hooks.record/define-record-type
                         active.clojure.record/define-record-type hooks.record/define-record-type
                         reacl2.core/defclass hooks.reacl/defclass}}}
