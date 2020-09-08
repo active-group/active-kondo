@@ -4,7 +4,9 @@
 (defn define-record-type
   [{:keys [:node]}]
   (let [[record-name constructor-spec predicate field-specs] (rest (:children node))
-        [constructor & _fields] (:children constructor-spec)
+        [constructor & _fields] (if-let [ch (:children constructor-spec)]
+                                  ch
+                                  [constructor-spec])
         accessors (map second (partition 2 (:children field-specs)))
         new-node
         (api/list-node
