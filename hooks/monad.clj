@@ -5,24 +5,34 @@
   [{:keys [:node]}]
   (letfn [(rewrite-monadic-form
             [forms]
-            (let [form (first forms)
-                  forms (rest forms)]
-              (if (empty? forms)
-                form
+            (if (empty? forms)
+              forms
+              (let [form (first forms)
+                    forms (rest forms)]
                 (cond
                   (= :vector (:tag form))
                   (api/list-node
                    (list (api/token-node 'let)
-                         (api/vector-node (:children form))
+                         form
                          (rewrite-monadic-form forms)))
                   (and (= :list (:tag form))
-                       (= (api/token-node 'let) (first (:children form))))
+                       (= 2 (count (:children form)))
+                       (= "let" (:string-value (first (:children form)))))
                   (api/list-node
-                   (list (api/token-node 'let)
-                         (api/vector-node (:children (second (:children form))))
-                         (rewrite-monadic-form forms)))
+                    (list (first (:children form))
+                          (second (:children form))
+                          (rewrite-monadic-form forms)))
                   :else
-                  (rewrite-monadic-form forms)))))]
-    (let [[& forms] (rest (:children node))
-          new-node (rewrite-monadic-form forms)]
-      {:node new-node})))
+                  (if (empty? forms)
+                    form
+                    (api/list-node
+                      (list (api/token-node 'do)
+                            form
+                            (rewrite-monadic-form forms))))))))]
+    (let [[& forms] (rest (:children node))]
+      (if (empty? forms)
+        (api/reg-finding! (assoc (meta node)
+                                 :message "monadic must not be empty"
+                                 :type :monad/empty))
+        (let [new-node (rewrite-monadic-form forms)]
+          {:node new-node})))))

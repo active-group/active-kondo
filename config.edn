@@ -1,8 +1,10 @@
 {:linters {:unused-referred-var {:exclude {taoensso.timbre [debug info warn error]}}
            :unresolved-symbol {:exclude [(cljs.core.async.macros/go [<! >!])
                                          (cljs.core.async.macros/go-loop [<! >!])
-                                         (riemann.streams/where [else event metric service state])]}}
- :hooks {:analyze-call {active.clojure.monad/monadic hooks.monad/monadic
+                                         (riemann.streams/where [else event metric service state])]}
+           :monad/empty {:level :error}}
+ :hooks {:analyze-call {active.clojure.match/match hooks.match/match
+                        active.clojure.monad/monadic hooks.monad/monadic
                         active.clojure.cljs.record/define-record-type hooks.record/define-record-type
                         active.clojure.record/define-record-type hooks.record/define-record-type
                         reacl2.core/defclass hooks.reacl/defclass}}}
