@@ -3,8 +3,33 @@
                                          (cljs.core.async.macros/go-loop [<! >!])
                                          (riemann.streams/where [else event metric service state])]}
            :monad/empty {:level :error}}
+ :lint-as {
+           reacl-c.core/def-item schema.core/def
+           reacl-c.core/defn-effect schema.core/defn
+           
+           reacl-c.core/ref-let clojure.core/let
+           reacl-c.test-util.core/provided clojure.core/let
+           reacl-c.impl.macros/defdom clojure.core/declare
+           reacl-c.dom/def-dom clojure.core/def ;; TODO: deserves some more detail
+
+           cljss.core/defstyles clojure.core/defn
+           reacl-c-basics.cljss/defstyles clojure.core/defn
+           ;; reacl-c-basics.pages.routes/defroutes clojure.core/do ;; not quite
+           reacl-c-basics.pages.routes/defroute clojure.core/def
+
+           nubank.workspaces.core/defcard clojure.core/def
+           }
  :hooks {:analyze-call {active.clojure.match/match hooks.match/match
                         active.clojure.monad/monadic hooks.monad/monadic
                         active.clojure.cljs.record/define-record-type hooks.record/define-record-type
+                        active.clojure.cljs.record/define-singleton-type hooks.record/define-singleton-type
                         active.clojure.record/define-record-type hooks.record/define-record-type
-                        reacl2.core/defclass hooks.reacl/defclass}}}
+                        active.clojure.record/define-singleton-type hooks.record/define-singleton-type
+
+                        reacl2.core/defclass hooks.reacl/defclass
+
+                        reacl-c.core/defn-item hooks.reacl-c/defn-item
+                        reacl-c.dom/defn-dom hooks.reacl-c/defn-dom
+                        reacl-c.core/with-state-as hooks.reacl-c/with-state-as
+                        reacl-c.core/defn-subscription hooks.reacl-c/defn-subscription
+                        }}}
