@@ -6,7 +6,7 @@
  :lint-as {
            reacl-c.core/def-item schema.core/def
            reacl-c.core/defn-effect schema.core/defn
-           
+
            reacl-c.core/ref-let clojure.core/let
            reacl-c.test-util.core/provided clojure.core/let
            reacl-c.impl.macros/defdom clojure.core/declare
@@ -21,6 +21,7 @@
            }
  :hooks {:analyze-call {active.clojure.match/match hooks.match/match
                         active.clojure.monad/monadic hooks.monad/monadic
+ :hooks {:analyze-call {active.clojure.monad/monadic hooks.monad/monadic
                         active.clojure.cljs.record/define-record-type hooks.record/define-record-type
                         active.clojure.cljs.record/define-singleton-type hooks.record/define-singleton-type
                         active.clojure.record/define-record-type hooks.record/define-record-type
