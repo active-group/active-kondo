@@ -18,7 +18,11 @@
                 (api/list-node [(api/token-node 'declare) record-name])
                 (api/list-node [(api/token-node 'declare) predicate])
                 (api/list-node [(api/token-node 'declare) constructor])
-                (map (fn [t] (api/list-node [(api/token-node 'declare) t])) accessors)))]
+                (map (fn [t] (api/list-node [(api/token-node 'declare) t]))
+                     (if-let [projection-lens (and (api/map-node? (first more))
+                                                   (:projection-lens (api/sexpr (first more))))]
+                       (conj accessors (api/token-node projection-lens))
+                       accessors))))]
   {:node new-node}))
 
 (defn define-singleton-type
