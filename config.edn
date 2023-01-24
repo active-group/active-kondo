@@ -19,8 +19,6 @@
 
            nubank.workspaces.core/defcard clojure.core/def
            }
- :hooks {:analyze-call {active.clojure.match/match hooks.match/match
-                        active.clojure.monad/monadic hooks.monad/monadic
  :hooks {:analyze-call {active.clojure.monad/monadic hooks.monad/monadic
                         active.clojure.cljs.record/define-record-type hooks.record/define-record-type
                         active.clojure.cljs.record/define-singleton-type hooks.record/define-singleton-type
