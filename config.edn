@@ -26,6 +26,7 @@
                         active.clojure.record/define-singleton-type hooks.record/define-singleton-type
 
                         reacl2.core/defclass hooks.reacl/defclass
+                        reacl2.dom/defdom hooks.reacl/defdom
 
                         reacl-c.core/defn-item hooks.reacl-c/defn-item
                         reacl-c.dom/defn-dom hooks.reacl-c/defn-dom

@@ -29,3 +29,8 @@
                           [(api/list-node (list* (api/token-node 'let) local-state
                                                  (map second (remove #(= 'local-state (first %)) (partition 2 clauses)))))]))))]
   {:node new-node}))
+
+(defn defdom
+  [{:keys [:node]}]
+  (let [[dom] (rest (:children node))]
+    {:node (api/list-node [(api/token-node 'declare) dom])}))
