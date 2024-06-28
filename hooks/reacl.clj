@@ -33,7 +33,7 @@
                                      (concat (:children local-state)
                                              (:children local)
                                              (when-let [this maybe-this]
-                                               [(api/token-node 'this) (api/string-node "dummy-this-reference")])))
+                                               [this (api/string-node "dummy-this-reference")])))
         clauses-without-let-like    (vals (dissoc clauses-map 'local-state 'local))
         bindings-with-state         (if-let [app-state maybe-app-state]
                                       (api/vector-node (cons app-state
