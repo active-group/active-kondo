@@ -1,34 +1,72 @@
 (ns hooks.reacl
-  (:require [clj-kondo.hooks-api :as api]))
-
-(defn declare-bindings
-  [bindings]
-  (mapcat (fn [t]
-            (if (:children t)
-              (declare-bindings t)
-              [(api/list-node [(api/token-node 'declare) t])]))
-          (:children bindings)))
+  (:require [clj-kondo.hooks-api :as api]
+            [utils.core :refer [is-binding-vector? isnt-binding-vector?]]))
 
 (defn defclass
-  [{:keys [:node]}]
-  (let [[class-name this ?app-state ?bindings & ?clauses] (rest (:children node))
-        app-state (if (empty? (:children ?app-state)) ?app-state nil)
-        bindings (if (empty? (:children ?app-state)) ?bindings ?app-state)
-        clauses (if (empty? (:children ?app-state)) ?clauses (concat [?bindings] ?clauses))
-        local-state (get (into {} (mapv (fn [[k v]] [(pr-str k) v]) (partition 2 clauses))) (pr-str (api/token-node 'local-state)))
+  [{:keys [node]}]
+  (let [[class-name ?this ?app-state ?bindings & ?clauses] (rest (:children node))
+        ;; NOTE if we want an app-state we need a this also!
+        [maybe-this maybe-app-state bindings clauses]
+        (cond
+          (and (isnt-binding-vector? ?this)
+               (isnt-binding-vector? ?app-state)
+               (is-binding-vector? ?bindings))
+          [?this ?app-state ?bindings ?clauses]
+
+          (and (isnt-binding-vector? ?this)
+               (is-binding-vector? ?app-state))
+          [?this nil ?app-state (->> ?clauses
+                                     (concat [?bindings])
+                                     (filter some?))]
+
+          (is-binding-vector? ?this)
+          [nil nil ?this (->> ?clauses
+                              (concat [?app-state ?bindings])
+                              (filter some?))])
+
+        clauses-map                 (into {} (mapv (fn [[k v]]
+                                                     [(api/sexpr k) v])
+                                                   (partition 2 clauses)))
+        local-state                 (get clauses-map 'local-state)
+        local                       (get clauses-map 'local)
+        vector-let-like             (api/vector-node
+                                     (concat (:children local-state)
+                                             (:children local)
+                                             (when-let [this maybe-this]
+                                               [(api/token-node 'this) (api/string-node "dummy-this-reference")])))
+        clauses-without-let-like    (vals (dissoc clauses-map 'local-state 'local))
+        bindings-with-state         (if-let [app-state maybe-app-state]
+                                      (api/vector-node (cons app-state
+                                                             (:children bindings)))
+                                      bindings)
+        opt-token                   (api/token-node 'opt)
+        bindings-with-state-and-opt (api/vector-node (cons opt-token
+                                                           (:children bindings-with-state)))
+        body                        (if (empty? vector-let-like)
+                                      clauses-without-let-like
+                                      [(api/list-node
+                                        (list* (api/token-node 'let)
+                                               vector-let-like
+                                               clauses-without-let-like))])
         new-node
-        (api/list-node
-         (list* (api/token-node 'do)
-                (api/list-node [(api/token-node 'declare) class-name])
-                (api/list-node [(api/token-node 'declare) this])
-                (concat (when app-state
-                          [(api/list-node [(api/token-node 'declare) app-state])])
-                        (declare-bindings bindings)
-                        (if (empty? local-state)
-                          (map second (remove #(= 'local-state (first %)) (partition 2 clauses)))
-                          [(api/list-node (list* (api/token-node 'let) local-state
-                                                 (map second (remove #(= 'local-state (first %)) (partition 2 clauses)))))]))))]
-  {:node new-node}))
+        (if (some #(= '& (:value %)) (:children bindings))
+          (api/list-node (list* (api/token-node 'defn)
+                                class-name
+                                bindings-with-state
+                                body))
+          (api/list-node (list (api/token-node 'defn)
+                               class-name
+                               (api/list-node
+                                (list* bindings-with-state
+                                       body))
+                               (api/list-node
+                                (list bindings-with-state-and-opt
+                                      ;;NOTE the following list-node is only there, so that opt is used somehow
+                                      (api/list-node
+                                       (list (api/token-node 'println) opt-token))
+                                      (api/list-node
+                                       (list* class-name (:children bindings-with-state))))))))]
+    {:node new-node}))
 
 (defn defdom
   [{:keys [:node]}]
