@@ -8,10 +8,7 @@
       (update :node
               (fn [node]
                 (if (api/list-node? node)
-                  (let [cs (:children node)]
-                    (let [res (f cs)]
-                      (println "xxxxx" cs "=>" res)
-                      res))
+                  (f (:children node))
                   ;; just keep? or an error?
                   (do #_(assert false node) ;; TODO: proper error
                       node))))))
